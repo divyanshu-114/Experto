@@ -1,0 +1,25 @@
+datasource db {
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
+  // uncomment next line if you use Prisma <5.10
+  // directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+model User {
+  id         Int      @id @default(autoincrement())
+  name       String?
+  email      String   @unique
+  password   String   // hashed
+  role       String   @default("student")
+  createdAt  DateTime @default(now())
+}
+
+// Courses table
+model Course {
+  course_id          Int    @id @default(autoincrement())
+  course_name        String
+  students_enrolled  Int    @default(0)
+}

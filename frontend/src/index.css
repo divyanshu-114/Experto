@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
+@import "tailwindcss";
+
+/* Use a stylish modern UI font for the whole app (login page will pick this up) */
+html, body {
+	font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* small custom animations used by the login UI */
+@keyframes slideUp {
+	from { transform: translateY(12px); opacity: 0 }
+	to   { transform: translateY(0); opacity: 1 }
+}
+
+@keyframes fadeIn {
+	from { opacity: 0 }
+	to   { opacity: 1 }
+}
+
+.animate-slideUp {
+	animation: slideUp 420ms cubic-bezier(.2,.9,.2,1) both;
+}
+
+.animate-fadeIn {
+	animation: fadeIn 320ms ease-out both;
+}
+
+/* small form tweaks */
+input::placeholder { color: rgba(107,114,128,0.5) }
+
