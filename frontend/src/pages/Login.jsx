@@ -36,15 +36,13 @@ const Login = () => {
                 credentials: 'include',
                 body: JSON.stringify(payload)
             })
-
             const text = await res.text()
             const data = (() => {
                 try { return text ? JSON.parse(text) : {} } catch { return {} }
             })()
             if (!res.ok) { setError(data.error || 'Login failed'); return }
-
-            // mark locally that user is logged-in (backend cookie still authoritative)
-            localStorage.setItem('isLoggedIn', 'true')
+            console.log(data)
+            localStorage.setItem('jwt', data.token)
             navigate('/dashboard', { replace: true })
         } catch (err) {
             console.error(err)

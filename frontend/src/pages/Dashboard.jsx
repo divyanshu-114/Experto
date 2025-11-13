@@ -15,11 +15,13 @@ import t3 from '../assets/teachers/t3.svg'
 import t4 from '../assets/teachers/t4.svg'
 import t5 from '../assets/teachers/t5.svg'
 import t6 from '../assets/teachers/t6.svg'
+import axios from 'axios'
 
 const Dashboard = () => {
   const [open, setOpen] = useState(false)
   const [courses, setCourses] = useState([])
   const [loadingCourses, setLoadingCourses] = useState(false)
+  const [user, setUser] = useState(null)
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
 
@@ -72,6 +74,27 @@ const Dashboard = () => {
     return () => { ignore = true; ctrl.abort() }
   }, [apiBase, debouncedSearch])
 
+  useEffect(() => {
+    async function checkUser() {
+    const token = localStorage.getItem('jwt')
+    const res = await axios.get(`${apiBase}/api/auth/check`, { headers: { Authorization: `Bearer ${token}` } })
+    if(res.data.ok){
+      setUser(res.data.user)
+      console.log(res.data.user)
+    }
+    }
+    checkUser()
+  },[])
+
+  useEffect(() => {
+    console.log(user)
+  }, [user])
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    setUser(null)
+  }
+
   const teachers = [
     { name: 'Raushan', subject: 'Data Science', img: t1 },
     { name: 'Divyanshu Raj', subject: 'Web Development', img: t2 },
@@ -102,6 +125,23 @@ const Dashboard = () => {
                   Contact Us
                 </button>
               </div>
+
+              {user ? (
+                <div className="flex items-center gap-3">
+                  <button className="px-4 py-2 rounded-full border border-gray-300 hover:border-gray-400 bg-white shadow-sm">
+                    {user.name}
+                  </button>
+                </div>
+              ):null}
+
+              {user ? (
+                <div className="flex items-center gap-3">
+                  <button className="px-4 py-2 rounded-full border border-gray-300 hover:border-gray-400 bg-white shadow-sm" onClick={() => handleLogout()}>
+                    Logout
+                  </button>
+                </div>
+              ):null}
+
             </nav>
 
             <div className="md:hidden flex items-center gap-2">

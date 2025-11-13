@@ -17,9 +17,8 @@ export default function Signup() {
     setErr('')
     setLoading(true)
     try {
-      await axios.post(`${apiBase}/api/auth/signup`, form, { withCredentials: true })
-      // on success set local state and redirect
-      localStorage.setItem('isLoggedIn', 'true')
+      const res = await axios.post(`${apiBase}/api/auth/signup`, form, { withCredentials: true })
+      localStorage.setItem('jwt', res.data.token)
       navigate('/dashboard')
     } catch (error) {
       setErr(error.response?.data?.error || 'Signup failed')

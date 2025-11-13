@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const {requireAuth} = require('../middleware/auth');
 
 if (!process.env.JWT_SECRET) {
   throw new Error("JWT_SECRET is missing in environment variables");
@@ -26,15 +27,9 @@ router.post('/signup', async (req, res) => {
       data: { name, email, password: hashed, role: role || 'student' }
     });
 
-    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: TOKEN_EXP });
-    // cookie 
-    res.cookie('token', token, {
-      httpOnly: true,
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
+    const token = jwt.sign({ userId: user.id, role: user.role, name: user.name }, JWT_SECRET, { expiresIn: TOKEN_EXP });
 
-    res.json({ user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+    res.json({ user: { id: user.id, email: user.email, name: user.name, role: user.role }, token });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
@@ -63,16 +58,9 @@ router.post('/login', async (req, res) => {
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) return res.status(400).json({ error: 'Invalid credentials' });
 
-    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: TOKEN_EXP });
+    const token = jwt.sign({ userId: user.id, role: user.role, name: user.name }, JWT_SECRET, { expiresIn: TOKEN_EXP });
 
-    // cookie
-    res.cookie('token', token, {
-      httpOnly: true,
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
-
-    res.json({ user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+    res.json({ user: { id: user.id, email: user.email, name: user.name, role: user.role },token });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
@@ -85,6 +73,10 @@ router.post('/login', async (req, res) => {
 router.post('/logout', (req, res) => {
   res.clearCookie('token');
   res.json({ ok: true });
+});
+
+router.get('/check',requireAuth, (req, res) => {
+  res.json({ ok: true,user: req.user });
 });
 
 module.exports = router;
