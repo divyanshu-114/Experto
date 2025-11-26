@@ -1,29 +1,35 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import imgJava from '../assets/courses/java.svg'
-import imgJs from '../assets/courses/javascript.svg'
-import imgPython from '../assets/courses/python.svg'
-import imgCpp from '../assets/courses/cpp.svg'
-import imgC from '../assets/courses/c.svg'
-import imgGo from '../assets/courses/go.svg'
-import imgRuby from '../assets/courses/ruby.svg'
-import imgPhp from '../assets/courses/php.svg'
-import imgKotlin from '../assets/courses/kotlin.svg'
-import t1 from '../assets/teachers/t1.svg'
-import t2 from '../assets/teachers/t2.svg'
-import t3 from '../assets/teachers/t3.svg'
-import t4 from '../assets/teachers/t4.svg'
-import t5 from '../assets/teachers/t5.svg'
-import t6 from '../assets/teachers/t6.svg'
-import axios from 'axios'
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+// Course Icons
+import imgJava from '../assets/courses/java.svg';
+import imgJs from '../assets/courses/javascript.svg';
+import imgPython from '../assets/courses/python.svg';
+import imgCpp from '../assets/courses/cpp.svg';
+import imgC from '../assets/courses/c.svg';
+import imgGo from '../assets/courses/go.svg';
+import imgRuby from '../assets/courses/ruby.svg';
+import imgPhp from '../assets/courses/php.svg';
+import imgKotlin from '../assets/courses/kotlin.svg';
+
+// Teacher Avatars
+import t1 from '../assets/teachers/t1.svg';
+import t2 from '../assets/teachers/t2.svg';
+import t3 from '../assets/teachers/t3.svg';
+import t4 from '../assets/teachers/t4.svg';
+import t5 from '../assets/teachers/t5.svg';
+import t6 from '../assets/teachers/t6.svg';
 
 const Dashboard = () => {
-  const [open, setOpen] = useState(false)
-  const [courses, setCourses] = useState([])
-  const [loadingCourses, setLoadingCourses] = useState(false)
-  const [user, setUser] = useState(null)
-  const [search, setSearch] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [courses, setCourses] = useState([]);
+  const [loadingCourses, setLoadingCourses] = useState(false);
+  const [user, setUser] = useState(null);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  
 
   const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:4000'
 
@@ -84,16 +90,23 @@ const Dashboard = () => {
     }
     }
     checkUser()
-  },[])
+  },[apiBase])
 
   useEffect(() => {
     console.log(user)
   }, [user])
 
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    setUser(null)
-  }
+  const handleLogout = async () => {
+    try {
+      await axios.post(`${apiBase}/api/auth/logout`, {}, { withCredentials: true });
+      localStorage.removeItem('jwt');
+      setUser(null);
+      // After logout, return to the dashboard landing page
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   const teachers = [
     { name: 'Raushan', subject: 'Data Science', img: t1 },
