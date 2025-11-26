@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 
 // Course Icons
@@ -45,6 +47,9 @@ const Dashboard = () => {
     kotlin: imgKotlin,
     typescript: imgJs
   }
+
+  // simple motion variants
+  const heroMotion = { hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } }
 
   const desc = (name) => {
     const n = name.toLowerCase()
@@ -121,7 +126,7 @@ const Dashboard = () => {
     <div className="scroll-smooth min-h-screen bg-[#f5f6f8] text-gray-900">
       <header className="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="h-16 flex items-center justify-between">
+            <div className="h-16 flex items-center justify-between">
             <Link to="/" className="text-2xl font-extrabold tracking-tight text-gray-900">
               Experto
             </Link>
@@ -166,25 +171,34 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        {open && (
-          <div className="md:hidden border-t border-gray-200 bg-white">
-            <div className="px-4 py-3 space-y-3">
-              <Link onClick={() => setOpen(false)} to="/" className="block text-gray-800">Home</Link>
-              <a onClick={() => setOpen(false)} href="#courses" className="block text-gray-600">Courses</a>
-              <a onClick={() => setOpen(false)} href="#teachers" className="block text-gray-600">Teach</a>
-              <a onClick={() => setOpen(false)} href="#analysis" className="block text-gray-600">About Us</a>
-              <div className="flex items-center gap-3 pt-2">
-                <button className="ml-auto px-4 py-2 rounded-full border border-gray-300 bg-white">Contact Us</button>
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              key="mobile-menu"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              className="md:hidden border-t border-gray-200 bg-white"
+            >
+              <div className="px-4 py-3 space-y-3">
+                <Link onClick={() => setOpen(false)} to="/" className="block text-gray-800">Home</Link>
+                <a onClick={() => setOpen(false)} href="#courses" className="block text-gray-600">Courses</a>
+                <a onClick={() => setOpen(false)} href="#teachers" className="block text-gray-600">Teach</a>
+                <a onClick={() => setOpen(false)} href="#analysis" className="block text-gray-600">About Us</a>
+                <div className="flex items-center gap-3 pt-2">
+                  <button className="ml-auto px-4 py-2 rounded-full border border-gray-300 bg-white">Contact Us</button>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       <main>
         <section>
           <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16 sm:py-24">
-            <div className="max-w-3xl">
+            <motion.div className="max-w-3xl" initial="hidden" animate="visible" variants={heroMotion}>
               <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight leading-tight text-gray-900">
                 Learn. Teach. Grow with Experto
               </h1>
@@ -199,7 +213,7 @@ const Dashboard = () => {
                   Become a Teacher
                 </Link>
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
 
@@ -227,7 +241,7 @@ const Dashboard = () => {
               {(loadingCourses && courses.length === 0 ? Array.from({ length: 10 }) : courses.slice(0, 10)).map((c, idx) => {
                 if (!c) {
                   return (
-                    <div key={`s-${idx}`} className="rounded-2xl bg-white border border-gray-200 shadow-sm overflow-hidden animate-pulse">
+                    <motion.div key={`s-${idx}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25, delay: idx * 0.02 }} className="rounded-2xl bg-white border border-gray-200 shadow-sm overflow-hidden animate-pulse">
                       <div className="h-36 w-full bg-gray-200" />
                       <div className="p-4">
                         <div className="h-4 w-3/5 bg-gray-200 rounded" />
@@ -235,13 +249,13 @@ const Dashboard = () => {
                         <div className="mt-1 h-3 w-5/6 bg-gray-200 rounded" />
                         <div className="mt-4 h-9 w-full bg-gray-200 rounded-full" />
                       </div>
-                    </div>
+                    </motion.div>
                   )
                 }
                 const key = (c.course_name || '').toLowerCase()
                 const img = images[key] || images.typescript
                 return (
-                  <div key={c.course_id} className="rounded-2xl bg-white border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+                  <motion.div key={c.course_id} whileHover={{ y: -6 }} whileTap={{ scale: 0.995 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }} className="rounded-2xl bg-white border border-gray-200 shadow-sm overflow-hidden flex flex-col">
                     <img loading="lazy" src={img} alt={c.course_name} className="h-36 w-full object-cover" />
                     <div className="p-4 flex-1 flex flex-col">
                       <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">{c.course_name}</h3>
@@ -250,7 +264,7 @@ const Dashboard = () => {
                         <Link to="/login" className="block w-full px-4 py-2 rounded-full bg-black text-white hover:bg-gray-900 text-center">Start Learning</Link>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 )
               })}
             </div>
@@ -269,7 +283,7 @@ const Dashboard = () => {
 
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {teachers.map((t) => (
-                <div key={t.name} className="group relative rounded-2xl bg-white border border-gray-200 shadow-sm p-6 overflow-hidden transition hover:shadow-xl hover:-translate-y-1">
+                <motion.div key={t.name} whileHover={{ y: -6 }} whileTap={{ scale: 0.995 }} transition={{ type: 'spring', stiffness: 280, damping: 22 }} className="group relative rounded-2xl bg-white border border-gray-200 shadow-sm p-6 overflow-hidden">
                   <div className="absolute -top-12 -right-12 w-40 h-40 bg-gray-100 rounded-full blur-2xl group-hover:bg-gray-200 transition" />
                   <div className="flex items-center gap-4">
                     <img src={t.img} alt={t.name} className="w-16 h-16 rounded-xl shadow-sm ring-1 ring-gray-200" />
@@ -284,7 +298,7 @@ const Dashboard = () => {
                   <div className="mt-5">
                     <button className="px-4 py-2 rounded-full border border-gray-300 bg-white text-gray-800 hover:border-gray-400">View profile</button>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
