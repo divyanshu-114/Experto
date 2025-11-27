@@ -134,7 +134,11 @@ const Dashboard = () => {
             <nav className="hidden md:flex items-center gap-8">
               <Link to="/" className="text-gray-700 hover:text-black">Home</Link>
               <a href="#courses" className="text-gray-600 hover:text-black">Courses</a>
-              <a href="#teachers" className="text-gray-600 hover:text-black">Teach</a>
+              {user ? (
+                <Link to="/dashboard" className="text-gray-600 hover:text-black">My Learning</Link>
+              ) : (
+                <a href="#teachers" className="text-gray-600 hover:text-black">Teach</a>
+              )}
               <a href="#analysis" className="text-gray-600 hover:text-black">About Us</a>
 
 
@@ -144,13 +148,7 @@ const Dashboard = () => {
                 </button>
               </div>
 
-              {user ? (
-                <div className="flex items-center gap-3">
-                  <button className="px-4 py-2 rounded-full border border-gray-300 hover:border-gray-400 bg-white shadow-sm">
-                    {user.name}
-                  </button>
-                </div>
-              ):null}
+              
 
               {user ? (
                 <div className="flex items-center gap-3">
@@ -184,7 +182,11 @@ const Dashboard = () => {
               <div className="px-4 py-3 space-y-3">
                 <Link onClick={() => setOpen(false)} to="/" className="block text-gray-800">Home</Link>
                 <a onClick={() => setOpen(false)} href="#courses" className="block text-gray-600">Courses</a>
-                <a onClick={() => setOpen(false)} href="#teachers" className="block text-gray-600">Teach</a>
+                {user ? (
+                  <Link onClick={() => setOpen(false)} to="/dashboard" className="block text-gray-600">My Learning</Link>
+                ) : (
+                  <a onClick={() => setOpen(false)} href="#teachers" className="block text-gray-600">Teach</a>
+                )}
                 <a onClick={() => setOpen(false)} href="#analysis" className="block text-gray-600">About Us</a>
                 <div className="flex items-center gap-3 pt-2">
                   <button className="ml-auto px-4 py-2 rounded-full border border-gray-300 bg-white">Contact Us</button>
@@ -199,6 +201,9 @@ const Dashboard = () => {
         <section>
           <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16 sm:py-24">
             <motion.div className="max-w-3xl" initial="hidden" animate="visible" variants={heroMotion}>
+              {user && (
+                <h2 className="mb-4 text-4xl sm:text-5xl font-extrabold text-gray-900">Hi, {user?.name || 'Learner'}</h2>
+              )}
               <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight leading-tight text-gray-900">
                 Learn. Teach. Grow with Experto
               </h1>
@@ -206,12 +211,11 @@ const Dashboard = () => {
                 A modern platform where learners upskill with curated courses and experts share knowledge by teaching.
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
-                <Link to="/login" className="px-6 py-3 rounded-full bg-black text-white hover:bg-gray-900 w-full sm:w-auto text-center">
-                  Start Learning
-                </Link>
-                <Link to="#" className="px-6 py-3 rounded-full border border-gray-300 text-gray-800 hover:border-gray-400 bg-white w-full sm:w-auto text-center">
-                  Become a Teacher
-                </Link>
+                {!user && (
+                  <Link to="/login" className="px-6 py-3 rounded-full bg-black text-white hover:bg-gray-900 w-full sm:w-auto text-center">
+                    Start Learning
+                  </Link>
+                )}
               </div>
             </motion.div>
           </div>
