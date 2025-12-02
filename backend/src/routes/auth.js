@@ -29,6 +29,12 @@ router.post('/signup', async (req, res) => {
 
     const token = jwt.sign({ userId: user.id, role: user.role, name: user.name }, JWT_SECRET, { expiresIn: TOKEN_EXP });
 
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      sameSite: 'Strict' // Adjust as needed
+    });
+
     res.json({ user: { id: user.id, email: user.email, name: user.name, role: user.role }, token });
   } catch (err) {
     console.error(err);
@@ -60,7 +66,15 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign({ userId: user.id, role: user.role, name: user.name }, JWT_SECRET, { expiresIn: TOKEN_EXP });
 
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      sameSite: 'Strict', // Adjust as needed
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
     res.json({ user: { id: user.id, email: user.email, name: user.name, role: user.role },token });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });

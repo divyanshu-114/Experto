@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
+import { useMyLearning } from '../context/MyLearningContext'
 
 // Course Icons
 import imgJava from '../assets/courses/java.svg';
@@ -29,6 +30,8 @@ const Dashboard = () => {
   const [courses, setCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [user, setUser] = useState(null);
+  const { taken: myLearning, add: addToLearning, remove: removeFromLearning } = useMyLearning()
+  const [addedCourseIds, setAddedCourseIds] = useState([])
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   
@@ -97,6 +100,12 @@ const Dashboard = () => {
     checkUser()
   },[apiBase])
 
+
+  // load learning when user changes
+  useEffect(()=>{
+    setAddedCourseIds(Array.isArray(myLearning) ? myLearning.map(c=>c.course_id) : [])
+  }, [myLearning])
+
   useEffect(() => {
     console.log(user)
   }, [user])
@@ -112,6 +121,28 @@ const Dashboard = () => {
       console.error('Logout failed:', error);
     }
   };
+
+  const handleAddToLearning = async (courseId) => {
+    try{
+      const token = localStorage.getItem('jwt')
+      if(!token) {
+        navigate('/login')
+        return
+      }
+      await addToLearning(courseId)
+      setCourses(prev => prev.map(c => c.course_id === courseId ? { ...c, students_enrolled: (c.students_enrolled || 0) + 1 } : c))
+    }catch(e){
+      console.error(e)
+    }
+  }
+
+  const handleRemoveFromLearning = async (courseId) => {
+    try{
+      await removeFromLearning(courseId)
+      // decrement local course count
+      setCourses(prev => prev.map(c => c.course_id === courseId ? { ...c, students_enrolled: Math.max(0, (c.students_enrolled || 1) - 1) } : c))
+    }catch(e){ console.error(e) }
+  }
 
   const teachers = [
     { name: 'Raushan', subject: 'Data Science', img: t1 },
@@ -135,7 +166,7 @@ const Dashboard = () => {
               <Link to="/" className="text-gray-700 hover:text-black">Home</Link>
               <a href="#courses" className="text-gray-600 hover:text-black">Courses</a>
               {user ? (
-                <Link to="/dashboard" className="text-gray-600 hover:text-black">My Learning</Link>
+                <Link to="/my-learning" className="text-gray-600 hover:text-black flex items-center gap-2">My Learning{myLearning.length > 0 && <span className="inline-flex items-center justify-center ml-1 w-5 h-5 rounded-full bg-red-600 text-white text-xs">{myLearning.length}</span>}</Link>
               ) : (
                 <a href="#teachers" className="text-gray-600 hover:text-black">Teach</a>
               )}
@@ -183,7 +214,7 @@ const Dashboard = () => {
                 <Link onClick={() => setOpen(false)} to="/" className="block text-gray-800">Home</Link>
                 <a onClick={() => setOpen(false)} href="#courses" className="block text-gray-600">Courses</a>
                 {user ? (
-                  <Link onClick={() => setOpen(false)} to="/dashboard" className="block text-gray-600">My Learning</Link>
+                  <Link onClick={() => setOpen(false)} to="/my-learning" className="block text-gray-600">My Learning{myLearning.length > 0 && <span className="inline-flex items-center justify-center ml-1 w-5 h-5 rounded-full bg-red-600 text-white text-xs">{myLearning.length}</span>}</Link>
                 ) : (
                   <a onClick={() => setOpen(false)} href="#teachers" className="block text-gray-600">Teach</a>
                 )}
@@ -265,7 +296,18 @@ const Dashboard = () => {
                       <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">{c.course_name}</h3>
                       <p className="mt-1 text-sm text-gray-600 line-clamp-2">{desc(c.course_name)}</p>
                       <div className="mt-4 pt-2">
-                        <Link to="/login" className="block w-full px-4 py-2 rounded-full bg-black text-white hover:bg-gray-900 text-center">Start Learning</Link>
+                                {user ? (
+                                  addedCourseIds.includes(c.course_id) ? (
+                                    <div className="flex gap-2">
+                                      <button className="flex-1 block px-4 py-2 rounded-full bg-gray-200 text-gray-700 text-center" disabled>Added</button>
+                                      <button onClick={() => handleRemoveFromLearning(c.course_id)} className="px-3 py-2 rounded-full bg-red-600 text-white">Remove</button>
+                                    </div>
+                                  ) : (
+                                    <button onClick={() => handleAddToLearning(c.course_id)} className="block w-full px-4 py-2 rounded-full bg-black text-white hover:bg-gray-900 text-center">Add to Your Learning</button>
+                                  )
+                                ) : (
+                                  <Link to="/login" className="block w-full px-4 py-2 rounded-full bg-black text-white hover:bg-gray-900 text-center">Add to Your Learning</Link>
+                                )}
                       </div>
                     </div>
                   </motion.div>

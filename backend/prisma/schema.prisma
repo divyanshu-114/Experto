@@ -15,6 +15,7 @@ model User {
   password   String   // hashed
   role       String   @default("student")
   createdAt  DateTime @default(now())
+  takenCourses TakenCourse[]
 }
 
 // Courses table
@@ -22,4 +23,17 @@ model Course {
   course_id          Int    @id @default(autoincrement())
   course_name        String
   students_enrolled  Int    @default(0)
+  takenCourses       TakenCourse[]
+}
+
+model TakenCourse {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  courseId  Int
+  addedAt   DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  course    Course   @relation(fields: [courseId], references: [course_id])
+
+  @@unique([userId, courseId])
 }

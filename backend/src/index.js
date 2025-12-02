@@ -4,6 +4,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/auth');
 const coursesRoutes = require('./routes/courses');
+const learningRoutes = require('./routes/learning');
 
 const app = express();
 app.use(express.json());
@@ -28,6 +29,7 @@ app.use(cors({
 
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', coursesRoutes);
+app.use('/api/learning', learningRoutes);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, ()=> console.log(`Server running on ${PORT}`));
