@@ -38,4 +38,4 @@ model TakenCourse {
   @@unique([userId, courseId])
 }
 
-// no problem with database url
+

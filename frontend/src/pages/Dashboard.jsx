@@ -34,6 +34,9 @@ const Dashboard = () => {
   const [addedCourseIds, setAddedCourseIds] = useState([])
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [page, setPage] = useState(1)
+  const limit = 10
+  const [totalPages, setTotalPages] = useState(1)
   
 
   const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:4000'
@@ -79,14 +82,17 @@ const Dashboard = () => {
     let ignore = false
     const ctrl = new AbortController()
     setLoadingCourses(true)
-    const qs = new URLSearchParams({ limit: '10', ...(debouncedSearch ? { search: debouncedSearch } : {}) })
+    const qs = new URLSearchParams({ limit: String(limit), page: String(page), ...(debouncedSearch ? { search: debouncedSearch } : {}) })
     fetch(`${apiBase}/api/courses?${qs.toString()}`, { signal: ctrl.signal })
       .then(r => r.json())
-      .then(d => { if (!ignore) setCourses(Array.isArray(d.courses) ? d.courses : []) })
+      .then(d => { if (!ignore) {
+        setCourses(Array.isArray(d.courses) ? d.courses : [])
+        setTotalPages(typeof d.totalPages === 'number' ? d.totalPages : 1)
+      } })
       .catch(() => { if (!ignore) setCourses([]) })
       .finally(() => { if (!ignore) setLoadingCourses(false) })
     return () => { ignore = true; ctrl.abort() }
-  }, [apiBase, debouncedSearch])
+  }, [apiBase, debouncedSearch, page, limit])
 
   useEffect(() => {
     async function checkUser() {
@@ -168,7 +174,10 @@ const Dashboard = () => {
               {user ? (
                 <Link to="/my-learning" className="text-gray-600 hover:text-black flex items-center gap-2">My Learning{myLearning.length > 0 && <span className="inline-flex items-center justify-center ml-1 w-5 h-5 rounded-full bg-red-600 text-white text-xs">{myLearning.length}</span>}</Link>
               ) : (
-                <a href="#teachers" className="text-gray-600 hover:text-black">Teach</a>
+                <>
+                  <a href="#teachers" className="text-gray-600 hover:text-black">Teach</a>
+                  <Link to="/signup?role=teacher" className="text-gray-600 hover:text-black">Become a Teacher</Link>
+                </>
               )}
               <a href="#analysis" className="text-gray-600 hover:text-black">About Us</a>
 
@@ -216,7 +225,10 @@ const Dashboard = () => {
                 {user ? (
                   <Link onClick={() => setOpen(false)} to="/my-learning" className="block text-gray-600">My Learning{myLearning.length > 0 && <span className="inline-flex items-center justify-center ml-1 w-5 h-5 rounded-full bg-red-600 text-white text-xs">{myLearning.length}</span>}</Link>
                 ) : (
-                  <a onClick={() => setOpen(false)} href="#teachers" className="block text-gray-600">Teach</a>
+                  <>
+                    <a onClick={() => setOpen(false)} href="#teachers" className="block text-gray-600">Teach</a>
+                    <Link onClick={() => setOpen(false)} to="/signup?role=teacher" className="block text-gray-600">Become a Teacher</Link>
+                  </>
                 )}
                 <a onClick={() => setOpen(false)} href="#analysis" className="block text-gray-600">About Us</a>
                 <div className="flex items-center gap-3 pt-2">
@@ -242,12 +254,17 @@ const Dashboard = () => {
                 A modern platform where learners upskill with curated courses and experts share knowledge by teaching.
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
-                {!user && (
-                  <Link to="/login" className="px-6 py-3 rounded-full bg-black text-white hover:bg-gray-900 w-full sm:w-auto text-center">
-                    Start Learning
-                  </Link>
-                )}
-              </div>
+                  {!user && (
+                    <>
+                      <Link to="/signup?role=teacher" className="px-6 py-3 rounded-full border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 w-full sm:w-auto text-center">
+                        Become a Teacher
+                      </Link>
+                      <Link to="/login" className="px-6 py-3 rounded-full bg-black text-white hover:bg-gray-900 w-full sm:w-auto text-center">
+                        Start Learning
+                      </Link>
+                    </>
+                  )}
+                </div>
             </motion.div>
           </div>
         </section>
@@ -273,7 +290,7 @@ const Dashboard = () => {
               {loadingCourses && <span className="text-sm text-gray-500">Loading…</span>}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-              {(loadingCourses && courses.length === 0 ? Array.from({ length: 10 }) : courses.slice(0, 10)).map((c, idx) => {
+              {(loadingCourses && courses.length === 0 ? Array.from({ length: limit }) : courses).map((c, idx) => {
                 if (!c) {
                   return (
                     <motion.div key={`s-${idx}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25, delay: idx * 0.02 }} className="rounded-2xl bg-white border border-gray-200 shadow-sm overflow-hidden animate-pulse">
@@ -313,6 +330,14 @@ const Dashboard = () => {
                   </motion.div>
                 )
               })}
+            </div>
+            {/* Pagination controls */}
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1} className="px-3 py-2 rounded-md border bg-white disabled:opacity-50">Prev</button>
+              <div className="px-3 py-2 rounded-md">
+                Page <span className="font-semibold">{page}</span> of <span className="font-semibold">{totalPages}</span>
+              </div>
+              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="px-3 py-2 rounded-md border bg-white disabled:opacity-50">Next</button>
             </div>
           </div>
         </section>
