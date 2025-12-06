@@ -7,12 +7,14 @@ const prisma = new PrismaClient()
 const cache = new Map() // key -> { at: number, data: any }
 const TTL_MS = 60 * 1000
 
-// GET /api/courses?limit=10
+// GET /api/courses?limit=10&page=1
 router.get('/', async (req, res) => {
   const limit = Math.min(parseInt(req.query.limit || '10', 10) || 10, 50)
+  const page = Math.max(parseInt(req.query.page || '1', 10) || 1, 1)
+  const skip = (page - 1) * limit
   const search = typeof req.query.search === 'string' ? req.query.search.trim() : ''
   try {
-    const key = JSON.stringify({ limit, search })
+    const key = JSON.stringify({ limit, page, search })
     const now = Date.now()
     const cached = cache.get(key)
     if (cached && now - cached.at < TTL_MS) {
@@ -23,13 +25,18 @@ router.get('/', async (req, res) => {
       course_name: { contains: search, mode: 'insensitive' }
     } : undefined
 
-    const courses = await prisma.course.findMany({
-      where,
-      take: limit,
-      orderBy: { course_id: 'asc' },
-      select: { course_id: true, course_name: true, students_enrolled: true }
-    })
-    const payload = { courses }
+    const [total, courses] = await Promise.all([
+      prisma.course.count({ where }),
+      prisma.course.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { course_id: 'asc' },
+        select: { course_id: true, course_name: true, students_enrolled: true }
+      })
+    ])
+    const totalPages = Math.max(1, Math.ceil(total / limit))
+    const payload = { courses, total, page, totalPages }
     cache.set(key, { at: now, data: payload })
     res.json(payload)
   } catch (e) {

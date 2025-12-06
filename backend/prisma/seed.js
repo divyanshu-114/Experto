@@ -21,7 +21,24 @@ async function main() {
     skipDuplicates: true
   })
 
-  console.log('Seeded courses:', courses.map(c => c.course_name).join(', '))
+  // Add 100 varied courses across subjects and topics for development/testing
+  const subjects = ['Web Development', 'Data Science', 'Machine Learning', 'Cloud Engineering', 'DevOps Practices', 'Mobile Development', 'Game Development', 'Databases', 'Cybersecurity', 'UI/UX Design']
+  const focuses = ['Fundamentals', 'Advanced Techniques', 'Project Bootcamp', 'Interview Prep', 'Performance Optimization']
+  const variants = ['with React & Node.js', 'with Python & Flask']
+
+  const extra = Array.from({ length: 100 }).map((_, i) => {
+    const s = subjects[i % subjects.length]
+    const f = focuses[Math.floor(i / subjects.length) % focuses.length]
+    const v = variants[Math.floor(i / (subjects.length * focuses.length)) % variants.length]
+    return { course_name: `${s} — ${f} ${v}`, students_enrolled: 0 }
+  })
+
+  await prisma.course.createMany({
+    data: extra,
+    skipDuplicates: true
+  })
+
+  console.log('Seeded courses:', courses.map(c => c.course_name).join(', '), 'plus 100 varied sample courses')
 }
 
 main()
