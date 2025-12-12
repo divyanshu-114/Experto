@@ -121,8 +121,12 @@ const Dashboard = () => {
       await axios.post(`${apiBase}/api/auth/logout`, {}, { withCredentials: true });
       localStorage.removeItem('jwt');
       setUser(null);
-      // After logout, return to the dashboard landing page
-      navigate('/dashboard');
+      // After logout, return to appropriate landing page
+      if (user?.role === 'admin') {
+        navigate('/start', { replace: true })
+      } else {
+        navigate('/dashboard', { replace: true })
+      }
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -172,7 +176,11 @@ const Dashboard = () => {
               <Link to="/" className="text-gray-700 hover:text-black">Home</Link>
               <a href="#courses" className="text-gray-600 hover:text-black">Courses</a>
               {user ? (
-                <Link to="/my-learning" className="text-gray-600 hover:text-black flex items-center gap-2">My Learning{myLearning.length > 0 && <span className="inline-flex items-center justify-center ml-1 w-5 h-5 rounded-full bg-red-600 text-white text-xs">{myLearning.length}</span>}</Link>
+                user.role === 'admin' ? (
+                  <Link to="/admin" className="text-gray-600 hover:text-black flex items-center gap-2">Admin Dashboard</Link>
+                ) : (
+                  <Link to="/my-learning" className="text-gray-600 hover:text-black flex items-center gap-2">My Learning{myLearning.length > 0 && <span className="inline-flex items-center justify-center ml-1 w-5 h-5 rounded-full bg-red-600 text-white text-xs">{myLearning.length}</span>}</Link>
+                )
               ) : (
                 <>
                   <a href="#teachers" className="text-gray-600 hover:text-black">Teach</a>
@@ -223,7 +231,11 @@ const Dashboard = () => {
                 <Link onClick={() => setOpen(false)} to="/" className="block text-gray-800">Home</Link>
                 <a onClick={() => setOpen(false)} href="#courses" className="block text-gray-600">Courses</a>
                 {user ? (
-                  <Link onClick={() => setOpen(false)} to="/my-learning" className="block text-gray-600">My Learning{myLearning.length > 0 && <span className="inline-flex items-center justify-center ml-1 w-5 h-5 rounded-full bg-red-600 text-white text-xs">{myLearning.length}</span>}</Link>
+                  user.role === 'admin' ? (
+                    <Link onClick={() => setOpen(false)} to="/admin" className="block text-gray-600">Admin Dashboard</Link>
+                  ) : (
+                    <Link onClick={() => setOpen(false)} to="/my-learning" className="block text-gray-600">My Learning{myLearning.length > 0 && <span className="inline-flex items-center justify-center ml-1 w-5 h-5 rounded-full bg-red-600 text-white text-xs">{myLearning.length}</span>}</Link>
+                  )
                 ) : (
                   <>
                     <a onClick={() => setOpen(false)} href="#teachers" className="block text-gray-600">Teach</a>

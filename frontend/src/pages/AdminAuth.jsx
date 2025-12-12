@@ -20,11 +20,11 @@ export default function AdminAuth(){
       if(mode === 'signup'){
         const res = await axios.post(`${apiBase}/api/auth/start-signup`, form, { withCredentials: true })
         localStorage.setItem('jwt', res.data.token)
-        navigate('/admin')
+        navigate('/admin', { replace: true })
       } else {
         const res = await axios.post(`${apiBase}/api/auth/start-login`, { email: form.email, password: form.password }, { withCredentials: true })
         localStorage.setItem('jwt', res.data.token)
-        navigate('/admin')
+        navigate('/admin', { replace: true })
       }
     } catch (error) {
       setErr(error.response?.data?.error || 'Authentication failed')

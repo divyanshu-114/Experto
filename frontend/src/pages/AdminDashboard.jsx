@@ -5,6 +5,7 @@ export default function AdminDashboard(){
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState('')
+  const [user, setUser] = useState(null)
   const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:4000'
 
   const token = localStorage.getItem('jwt')
@@ -20,6 +21,31 @@ export default function AdminDashboard(){
   }, [apiBase, token])
 
   useEffect(()=>{ fetchCourses() }, [fetchCourses])
+
+  useEffect(() => {
+    // fetch user info to show in header
+    async function check() {
+      try{
+        const res = await fetch(`${apiBase}/api/auth/check`, { headers: { Authorization: `Bearer ${token}` } })
+        const d = await res.json()
+        if (res.ok && d.user) setUser(d.user)
+      } catch { /* ignore */ }
+    }
+    if(token) check()
+  }, [apiBase, token])
+
+  // prevent navigating back to the user dashboard while admin is signed in
+  useEffect(() => {
+    const onPop = () => {
+      const p = window.location.pathname
+      if (p === '/dashboard' || p === '/') {
+        // keep admin on /admin
+        window.history.pushState(null, '', '/admin')
+      }
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
 
   const addCourse = async () => {
     setErr('')
@@ -39,8 +65,30 @@ export default function AdminDashboard(){
     }catch(e){ console.error(e); setErr('Failed to delete') }
   }
 
+  const handleLogout = async () => {
+    try{
+      await fetch(`${apiBase}/api/auth/logout`, { method: 'POST', credentials: 'include' })
+    } catch { /* ignore */ }
+    localStorage.removeItem('jwt')
+    // redirect to admin start page and replace history so back doesn't return
+    window.location.href = '/start'
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <a href="/" className="font-bold text-lg">Experto</a>
+          <div className="flex items-center gap-4">
+            <a href="/" className="text-gray-600">Home</a>
+            <a href="/admin" className="text-gray-900 font-semibold">Admin</a>
+            {user && <div className="text-sm text-gray-700">Hi, {user.name}</div>}
+            <button onClick={handleLogout} className="px-3 py-2 rounded bg-white border">Logout</button>
+          </div>
+        </div>
+      </header>
+
+      <main className="p-6">
       <div className="max-w-4xl mx-auto bg-white p-6 rounded shadow">
         <h1 className="text-2xl font-bold mb-4">Admin — Course Management</h1>
         <div className="flex gap-2 mb-4">
@@ -64,6 +112,7 @@ export default function AdminDashboard(){
           </ul>
         )}
       </div>
+      </main>
     </div>
   )
 }
