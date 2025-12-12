@@ -23,6 +23,7 @@ model Course {
   course_id          Int    @id @default(autoincrement())
   course_name        String
   students_enrolled  Int    @default(0)
+  price              Float  @default(0.0)
   takenCourses       TakenCourse[]
 }
 

@@ -17,7 +17,7 @@ async function main() {
 
   // Use createMany with skipDuplicates in case you rerun the seed
   await prisma.course.createMany({
-    data: courses,
+    data: courses.map(c => ({ ...c, price: 29.99 })),
     skipDuplicates: true
   })
 
@@ -30,7 +30,9 @@ async function main() {
     const s = subjects[i % subjects.length]
     const f = focuses[Math.floor(i / subjects.length) % focuses.length]
     const v = variants[Math.floor(i / (subjects.length * focuses.length)) % variants.length]
-    return { course_name: `${s} — ${f} ${v}`, students_enrolled: 0 }
+    // deterministic price between 9.99 and 199.99
+    const price = Math.round(((10 + (i % 190)) + Math.random()) * 100) / 100
+    return { course_name: `${s} — ${f} ${v}`, students_enrolled: 0, price }
   })
 
   await prisma.course.createMany({

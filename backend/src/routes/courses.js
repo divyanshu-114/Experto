@@ -13,6 +13,8 @@ router.get('/', async (req, res) => {
   const page = Math.max(parseInt(req.query.page || '1', 10) || 1, 1)
   const skip = (page - 1) * limit
   const search = typeof req.query.search === 'string' ? req.query.search.trim() : ''
+  const minPrice = typeof req.query.minPrice === 'string' && req.query.minPrice !== '' ? parseFloat(req.query.minPrice) : undefined
+  const maxPrice = typeof req.query.maxPrice === 'string' && req.query.maxPrice !== '' ? parseFloat(req.query.maxPrice) : undefined
   try {
     const key = JSON.stringify({ limit, page, search })
     const now = Date.now()
@@ -21,9 +23,13 @@ router.get('/', async (req, res) => {
       return res.json(cached.data)
     }
 
-    const where = search ? {
-      course_name: { contains: search, mode: 'insensitive' }
-    } : undefined
+    const where = {}
+    if (search) where.course_name = { contains: search, mode: 'insensitive' }
+    if (typeof minPrice === 'number' || typeof maxPrice === 'number') {
+      where.price = {}
+      if (typeof minPrice === 'number') where.price.gte = minPrice
+      if (typeof maxPrice === 'number') where.price.lte = maxPrice
+    }
 
     const [total, courses] = await Promise.all([
       prisma.course.count({ where }),
@@ -32,7 +38,7 @@ router.get('/', async (req, res) => {
         skip,
         take: limit,
         orderBy: { course_id: 'asc' },
-        select: { course_id: true, course_name: true, students_enrolled: true }
+        select: { course_id: true, course_name: true, students_enrolled: true, price: true }
       })
     ])
     const totalPages = Math.max(1, Math.ceil(total / limit))
@@ -62,10 +68,10 @@ router.post('/', async (req, res) => {
     }
     if (userRole !== 'admin') return res.status(403).json({ error: 'Only admin can create courses' })
 
-    const { course_name } = req.body
+    const { course_name, price } = req.body
     if (!course_name) return res.status(400).json({ error: 'course_name is required' })
 
-    const created = await prisma.course.create({ data: { course_name } })
+    const created = await prisma.course.create({ data: { course_name, price: typeof price === 'number' ? price : 0 } })
     res.json({ course: created })
   } catch (e) {
     console.error(e)

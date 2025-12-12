@@ -37,6 +37,8 @@ const Dashboard = () => {
   const [page, setPage] = useState(1)
   const limit = 10
   const [totalPages, setTotalPages] = useState(1)
+  const [minPrice, setMinPrice] = useState('')
+  const [maxPrice, setMaxPrice] = useState('')
   
 
   const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:4000'
@@ -82,7 +84,7 @@ const Dashboard = () => {
     let ignore = false
     const ctrl = new AbortController()
     setLoadingCourses(true)
-    const qs = new URLSearchParams({ limit: String(limit), page: String(page), ...(debouncedSearch ? { search: debouncedSearch } : {}) })
+    const qs = new URLSearchParams({ limit: String(limit), page: String(page), ...(debouncedSearch ? { search: debouncedSearch } : {}), ...(minPrice !== '' ? { minPrice: String(minPrice) } : {}), ...(maxPrice !== '' ? { maxPrice: String(maxPrice) } : {}) })
     fetch(`${apiBase}/api/courses?${qs.toString()}`, { signal: ctrl.signal })
       .then(r => r.json())
       .then(d => { if (!ignore) {
@@ -92,7 +94,7 @@ const Dashboard = () => {
       .catch(() => { if (!ignore) setCourses([]) })
       .finally(() => { if (!ignore) setLoadingCourses(false) })
     return () => { ignore = true; ctrl.abort() }
-  }, [apiBase, debouncedSearch, page, limit])
+  }, [apiBase, debouncedSearch, page, limit, minPrice, maxPrice])
 
   useEffect(() => {
     async function checkUser() {
@@ -287,13 +289,17 @@ const Dashboard = () => {
             {/* Centered search above */}
             <div className="max-w-xl mx-auto text-center mb-8">
               <label className="sr-only" htmlFor="course-search">Search for more courses</label>
-              <input
-                id="course-search"
-                value={search}
-                onChange={(e)=>setSearch(e.target.value)}
-                placeholder="Search for more courses"
-                className="w-full px-5 py-3 rounded-full border border-gray-300 bg-white placeholder-gray-400 focus:border-gray-400 focus:ring-0"
-              />
+              <div className="flex gap-2">
+                <input
+                  id="course-search"
+                  value={search}
+                  onChange={(e)=>setSearch(e.target.value)}
+                  placeholder="Search for more courses"
+                  className="flex-1 px-5 py-3 rounded-full border border-gray-300 bg-white placeholder-gray-400 focus:border-gray-400 focus:ring-0"
+                />
+                <input value={minPrice} onChange={(e)=>{ setMinPrice(e.target.value); setPage(1) }} placeholder="Min" className="w-20 px-3 py-3 rounded-full border border-gray-300 bg-white text-sm" />
+                <input value={maxPrice} onChange={(e)=>{ setMaxPrice(e.target.value); setPage(1) }} placeholder="Max" className="w-20 px-3 py-3 rounded-full border border-gray-300 bg-white text-sm" />
+              </div>
               <p className="mt-2 text-sm text-gray-500">Type to search more courses (coming soon)</p>
             </div>
 
@@ -338,6 +344,7 @@ const Dashboard = () => {
                                   <Link to="/login" className="block w-full px-4 py-2 rounded-full bg-black text-white hover:bg-gray-900 text-center">Add to Your Learning</Link>
                                 )}
                       </div>
+                      <div className="mt-2 text-sm text-gray-700">Price: <span className="font-medium">${c.price?.toFixed(2)}</span></div>
                     </div>
                   </motion.div>
                 )
