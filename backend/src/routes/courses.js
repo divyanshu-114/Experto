@@ -45,4 +45,59 @@ router.get('/', async (req, res) => {
   }
 })
 
+// POST /api/courses - create a course (admin only)
+router.post('/', async (req, res) => {
+  try {
+    // check auth from header
+    const auth = req.headers.authorization?.split(' ')[1]
+    let userRole = null
+    if (auth) {
+      try {
+        const jwt = require('jsonwebtoken')
+        const payload = jwt.verify(auth, process.env.JWT_SECRET || 'default_secret')
+        userRole = payload.role
+      } catch (e) {
+        // ignore
+      }
+    }
+    if (userRole !== 'admin') return res.status(403).json({ error: 'Only admin can create courses' })
+
+    const { course_name } = req.body
+    if (!course_name) return res.status(400).json({ error: 'course_name is required' })
+
+    const created = await prisma.course.create({ data: { course_name } })
+    res.json({ course: created })
+  } catch (e) {
+    console.error(e)
+    res.status(500).json({ error: 'Failed to create course' })
+  }
+})
+
+// DELETE /api/courses/:id - delete course (admin only)
+router.delete('/:id', async (req, res) => {
+  try {
+    const auth = req.headers.authorization?.split(' ')[1]
+    let userRole = null
+    if (auth) {
+      try {
+        const jwt = require('jsonwebtoken')
+        const payload = jwt.verify(auth, process.env.JWT_SECRET || 'default_secret')
+        userRole = payload.role
+      } catch (e) {
+        // ignore
+      }
+    }
+    if (userRole !== 'admin') return res.status(403).json({ error: 'Only admin can delete courses' })
+
+    const id = parseInt(req.params.id, 10)
+    if (!id) return res.status(400).json({ error: 'Invalid course id' })
+
+    await prisma.course.delete({ where: { course_id: id } })
+    res.json({ ok: true })
+  } catch (e) {
+    console.error(e)
+    res.status(500).json({ error: 'Failed to delete course' })
+  }
+})
+
 module.exports = router
