@@ -16,7 +16,8 @@ router.get('/', async (req, res) => {
   const minPrice = typeof req.query.minPrice === 'string' && req.query.minPrice !== '' ? parseFloat(req.query.minPrice) : undefined
   const maxPrice = typeof req.query.maxPrice === 'string' && req.query.maxPrice !== '' ? parseFloat(req.query.maxPrice) : undefined
   try {
-    const key = JSON.stringify({ limit, page, search })
+    // include price filters in cache key so filtered requests don't return stale/unfiltered data
+    const key = JSON.stringify({ limit, page, search, minPrice: typeof minPrice === 'number' ? minPrice : null, maxPrice: typeof maxPrice === 'number' ? maxPrice : null })
     const now = Date.now()
     const cached = cache.get(key)
     if (cached && now - cached.at < TTL_MS) {
