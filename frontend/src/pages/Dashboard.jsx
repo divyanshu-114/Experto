@@ -273,7 +273,7 @@ const Dashboard = () => {
                       <Link to="/start" className="px-6 py-3 rounded-full border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 w-full sm:w-auto text-center">
                         Become a Teacher
                       </Link>
-                      <Link to="/start" className="px-6 py-3 rounded-full bg-black text-white hover:bg-gray-900 w-full sm:w-auto text-center">
+                      <Link to="/login" className="px-6 py-3 rounded-full bg-black text-white hover:bg-gray-900 w-full sm:w-auto text-center">
                         Start Learning
                       </Link>
                     </>
