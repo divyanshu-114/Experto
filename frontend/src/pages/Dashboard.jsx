@@ -184,7 +184,7 @@ const Dashboard = () => {
               ) : (
                 <>
                   <a href="#teachers" className="text-gray-600 hover:text-black">Teach</a>
-                  <Link to="/signup?role=teacher" className="text-gray-600 hover:text-black">Become a Teacher</Link>
+                  <Link to="/start" className="text-gray-600 hover:text-black">Become a Teacher</Link>
                 </>
               )}
               <a href="#analysis" className="text-gray-600 hover:text-black">About Us</a>
@@ -268,7 +268,7 @@ const Dashboard = () => {
               <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
                   {!user && (
                     <>
-                      <Link to="/signup?role=teacher" className="px-6 py-3 rounded-full border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 w-full sm:w-auto text-center">
+                      <Link to="/start" className="px-6 py-3 rounded-full border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 w-full sm:w-auto text-center">
                         Become a Teacher
                       </Link>
                       <Link to="/start" className="px-6 py-3 rounded-full bg-black text-white hover:bg-gray-900 w-full sm:w-auto text-center">
