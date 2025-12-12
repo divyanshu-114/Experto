@@ -3,7 +3,7 @@ import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 
 export default function AdminAuth(){
-  const [mode, setMode] = useState('login') // 'login' or 'signup'
+  const [mode, setMode] = useState('login')
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [err, setErr] = useState('')
   const [loading, setLoading] = useState(false)
@@ -34,28 +34,50 @@ export default function AdminAuth(){
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-md p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">{mode === 'signup' ? 'Admin Sign up' : 'Admin Login'}</h2>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-700 to-pink-600 flex items-center">
+      <div className="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
+        <div className="hidden md:flex flex-col justify-center gap-6 p-8 rounded-2xl text-white bg-white/5 backdrop-blur">
           <div>
-            <button onClick={() => setMode(mode === 'signup' ? 'login' : 'signup')} className="text-sm text-blue-600 underline">{mode === 'signup' ? 'Switch to Login' : 'Switch to Sign up'}</button>
+            <h1 className="text-4xl font-extrabold">Experto Admin</h1>
+            <p className="mt-2 text-indigo-100/90">Secure admin access — manage courses and platform content.</p>
+          </div>
+          <div className="mt-6 text-sm text-indigo-100/80">
+            <p>Use the Start Learning flow to create an admin, or login if you already have admin access.</p>
           </div>
         </div>
 
-        <form onSubmit={submit} className="space-y-4">
-          {mode === 'signup' && (
-            <input name="name" value={form.name} onChange={handle} placeholder="Full name" className="w-full border px-3 py-2 rounded" required />
-          )}
-          <input name="email" type="email" value={form.email} onChange={handle} placeholder="you@example.com" className="w-full border px-3 py-2 rounded" required />
-          <input name="password" type="password" value={form.password} onChange={handle} placeholder="Password" className="w-full border px-3 py-2 rounded" required />
-
-          {err && <div className="text-sm text-red-600">{err}</div>}
-
-          <div className="flex items-center gap-3">
-            <button disabled={loading} className="px-4 py-2 bg-blue-600 text-white rounded">{mode === 'signup' ? 'Create Admin' : 'Login as Admin'}</button>
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-semibold text-gray-800">{mode === 'signup' ? 'Create Admin' : 'Admin Login'}</h2>
+            <button onClick={() => setMode(mode === 'signup' ? 'login' : 'signup')} className="text-sm text-indigo-600 hover:underline">{mode === 'signup' ? 'Have an account? Sign in' : 'Create an admin'}</button>
           </div>
-        </form>
+
+          <form onSubmit={submit} className="space-y-4">
+            {mode === 'signup' && (
+              <div>
+                <label className="sr-only">Full name</label>
+                <input name="name" value={form.name} onChange={handle} placeholder="Full name" className="w-full border border-gray-200 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200" required />
+              </div>
+            )}
+
+            <div>
+              <label className="sr-only">Email</label>
+              <input name="email" type="email" value={form.email} onChange={handle} placeholder="you@company.com" className="w-full border border-gray-200 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200" required />
+            </div>
+
+            <div>
+              <label className="sr-only">Password</label>
+              <input name="password" type="password" value={form.password} onChange={handle} placeholder="Password" className="w-full border border-gray-200 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200" required />
+            </div>
+
+            {err && <div className="text-sm text-rose-600">{err}</div>}
+
+            <div className="flex items-center gap-3">
+              <button disabled={loading} className="inline-flex items-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow">{mode === 'signup' ? 'Create Admin' : 'Sign in'}</button>
+              <button type="button" onClick={() => { setForm({ name: '', email: '', password: '' }); setErr('') }} className="px-4 py-2 text-sm text-gray-600">Reset</button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   )
