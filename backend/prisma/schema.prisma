@@ -39,4 +39,3 @@ model TakenCourse {
   @@unique([userId, courseId])
 }
 
-
